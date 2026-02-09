@@ -2,6 +2,6 @@
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 void main() {
         Grafo grafo = utils.leerDatos();
-        grafo.bfsCheck(3);
+        grafo.imprimirCamino(grafo.dijkstra(3, 0, grafo.adj));
     }
 
