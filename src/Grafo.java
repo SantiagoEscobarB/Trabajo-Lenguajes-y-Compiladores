@@ -3,15 +3,13 @@ import java.util.*;
 public class Grafo {
     int V;
     int[][] matrizAdj;
-    List<Edge> listaAdj;
     private int[] victimas;
     private static final Integer INF = 100_000_000;
     public Grafo(int V) {
         this.V = V;
         matrizAdj = new int[V][V];
-        listaAdj = new ArrayList<>();
         victimas = new int[V];
-
+        Arrays.fill(victimas, 0);
         for (int i = 0; i < V; i++) {
             for (int j = 0; j < V; j++) {
                 if (i == j) matrizAdj[i][j] = 0;
@@ -29,8 +27,6 @@ public class Grafo {
     public void addEdge(int u, int v, int d) {
         matrizAdj[u][v] = d;
         matrizAdj[v][u] = d;
-
-        listaAdj.add(new Edge(u, v, d));
     }
 
     public void bfsCheck(int start) {
@@ -104,40 +100,70 @@ public class Grafo {
     }
 
     public List<Integer> bellmanFordMaxVictimas(int origen, int guarida) {
-
         int[] maxVictimas = new int[V];
-        int[] prev        = new int[V];
-        Arrays.fill(maxVictimas, Integer.MIN_VALUE);
+        int[] prev = new int[V];
+        boolean[] visitado = new boolean[V]; // Nuevo: rastrear nodos ya visitados en el camino
+
+        Arrays.fill(maxVictimas, -INF);
         Arrays.fill(prev, -1);
+
+        // Inicializar origen
         maxVictimas[origen] = victimas[origen];
+        visitado[origen] = true; // Marcar origen como visitado
+
+        // Detección temprana: verificar si guarida es alcanzable
+        boolean cambioEnIteracion = false;
 
         for (int i = 0; i < V - 1; i++) {
-            boolean actualizado = false;
+            cambioEnIteracion = false;
 
-                for (Edge e : listaAdj) {
-                    int u = e.source;
-                    int v = e.target;
+            for (int u = 0; u < V; u++) {
+                if (maxVictimas[u] == -INF) continue; // Saltar nodos no alcanzables
 
-                    if (maxVictimas[u] == Integer.MIN_VALUE) continue;
-                    int aporte       = estaEnCamino(v, u, prev) ? 0 : victimas[v];
-                    int nuevaVictimas = maxVictimas[u] + aporte;
+                for (int v = 0; v < V; v++) {
+                    if (matrizAdj[u][v] != INF && u != v) {
+                        // Calcular nuevo valor potencial
+                        int nuevoValor;
 
-                    if (nuevaVictimas > maxVictimas[v]) {
-                        maxVictimas[v] = nuevaVictimas;
-                        prev[v]        = u;
-                        actualizado    = true;
+                        if (visitado[v] || v ==guarida) {
+                            // Si v ya fue visitado en algún camino, no sumar sus víctimas
+                            nuevoValor = maxVictimas[u];
+                        } else {
+                            // Si v no ha sido visitado, sumar sus víctimas
+                            nuevoValor = maxVictimas[u] + victimas[v];
+                        }
+
+                        if (nuevoValor > maxVictimas[v]) {
+                            maxVictimas[v] = nuevoValor;
+                            prev[v] = u;
+                            // Marcar como visitado solo si sumamos sus víctimas
+                            if (v != guarida && !visitado[v]) {
+                                visitado[v] = true;
+                            }
+                            cambioEnIteracion = true;
+                        }
                     }
                 }
-            if (!actualizado) break; // Optimización: convergencia temprana
+            }
+
+            // Optimización: si no hubo cambios, no hay más caminos por explorar
+            if (!cambioEnIteracion) {
+                break;
+            }
+
+            // Si la guarida ya es alcanzable y no hay cambios, podemos parar
+            if (maxVictimas[guarida] != -INF && !cambioEnIteracion) {
+                break;
+            }
         }
 
-        // ── Sin camino ────────────────────────────────────────────────────────────
-        if (maxVictimas[guarida] == Integer.MIN_VALUE) {
+        // Verificar si hay camino a la guarida
+        if (maxVictimas[guarida] == -INF) {
             System.out.println("No hay camino hacia la guarida");
-            return null;
+            return new ArrayList<>();
         }
 
-        // ── Reconstrucción del camino siguiendo prev[] ────────────────────────────
+        // Reconstruir camino y marcar nodos visitados
         List<Integer> camino = new ArrayList<>();
         int actual = guarida;
         boolean[] visitadoCamino = new boolean[V];
@@ -147,31 +173,22 @@ public class Grafo {
                 System.out.println("Ciclo detectado en reconstrucción");
                 break;
             }
+
             visitadoCamino[actual] = true;
             camino.add(actual);
+
+            // Marcar este nodo como visitado para futuros cálculos
+            visitado[actual] = true;
+
             actual = prev[actual];
         }
 
         Collections.reverse(camino);
-        System.out.println("Camino: " + camino);
+
         System.out.println("Máximo de víctimas: " + maxVictimas[guarida]);
+
         return camino;
     }
-
-    private boolean estaEnCamino(int objetivo, int desde, int[] prev) {
-        boolean[] visitado = new boolean[V];
-        int actual = desde;
-        while (actual != -1) {
-            if (actual == objetivo) return true;
-            if (visitado[actual])   break;
-            visitado[actual] = true;
-            actual = prev[actual];
-        }
-        return false;
-    }
-
-
-
 
     public void imprimirCamino(List<Integer> camino) {
         for (int i = 0; i < camino.size(); i++) {
