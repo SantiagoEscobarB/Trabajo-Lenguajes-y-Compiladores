@@ -2,19 +2,21 @@ import java.util.*;
 
 public class Grafo {
     int V;
-    int[][] adj;
+    int[][] matrizAdj;
+    List<Edge> listaAdj;
     private int[] victimas;
     private static final Integer INF = 100_000_000;
     public Grafo(int V) {
         this.V = V;
-        adj = new int[V][V];
+        matrizAdj = new int[V][V];
+        listaAdj = new ArrayList<>();
         victimas = new int[V];
 
         for (int i = 0; i < V; i++) {
             for (int j = 0; j < V; j++) {
-                if (i == j) adj[i][j] = 0;
+                if (i == j) matrizAdj[i][j] = 0;
                 else {
-                    adj[i][j] = INF;
+                    matrizAdj[i][j] = INF;
                 }
             }
         }
@@ -25,8 +27,10 @@ public class Grafo {
     }
 
     public void addEdge(int u, int v, int d) {
-        adj[u][v] = d;
-        adj[v][u] = d;
+        matrizAdj[u][v] = d;
+        matrizAdj[v][u] = d;
+
+        listaAdj.add(new Edge(u, v, d));
     }
 
     public void bfsCheck(int start) {
@@ -44,7 +48,7 @@ public class Grafo {
             System.out.print(node + " ");
 
             for (int i = 0; i < V; i++) {
-                if(adj[node][i] != INF && node != i && !visited[i]) {
+                if(matrizAdj[node][i] != INF && node != i && !visited[i]) {
                     visited[i] = true;
                     q.add(i);
                 }
@@ -98,6 +102,76 @@ public class Grafo {
         Collections.reverse(camino);
         return camino;
     }
+
+    public List<Integer> bellmanFordMaxVictimas(int origen, int guarida) {
+
+        int[] maxVictimas = new int[V];
+        int[] prev        = new int[V];
+        Arrays.fill(maxVictimas, Integer.MIN_VALUE);
+        Arrays.fill(prev, -1);
+        maxVictimas[origen] = victimas[origen];
+
+        for (int i = 0; i < V - 1; i++) {
+            boolean actualizado = false;
+
+                for (Edge e : listaAdj) {
+                    int u = e.source;
+                    int v = e.target;
+
+                    if (maxVictimas[u] == Integer.MIN_VALUE) continue;
+                    int aporte       = estaEnCamino(v, u, prev) ? 0 : victimas[v];
+                    int nuevaVictimas = maxVictimas[u] + aporte;
+
+                    if (nuevaVictimas > maxVictimas[v]) {
+                        maxVictimas[v] = nuevaVictimas;
+                        prev[v]        = u;
+                        actualizado    = true;
+                    }
+                }
+            if (!actualizado) break; // Optimización: convergencia temprana
+        }
+
+        // ── Sin camino ────────────────────────────────────────────────────────────
+        if (maxVictimas[guarida] == Integer.MIN_VALUE) {
+            System.out.println("No hay camino hacia la guarida");
+            return null;
+        }
+
+        // ── Reconstrucción del camino siguiendo prev[] ────────────────────────────
+        List<Integer> camino = new ArrayList<>();
+        int actual = guarida;
+        boolean[] visitadoCamino = new boolean[V];
+
+        while (actual != -1) {
+            if (visitadoCamino[actual]) {
+                System.out.println("Ciclo detectado en reconstrucción");
+                break;
+            }
+            visitadoCamino[actual] = true;
+            camino.add(actual);
+            actual = prev[actual];
+        }
+
+        Collections.reverse(camino);
+        System.out.println("Camino: " + camino);
+        System.out.println("Máximo de víctimas: " + maxVictimas[guarida]);
+        return camino;
+    }
+
+    private boolean estaEnCamino(int objetivo, int desde, int[] prev) {
+        boolean[] visitado = new boolean[V];
+        int actual = desde;
+        while (actual != -1) {
+            if (actual == objetivo) return true;
+            if (visitado[actual])   break;
+            visitado[actual] = true;
+            actual = prev[actual];
+        }
+        return false;
+    }
+
+
+
 
     public void imprimirCamino(List<Integer> camino) {
         for (int i = 0; i < camino.size(); i++) {
