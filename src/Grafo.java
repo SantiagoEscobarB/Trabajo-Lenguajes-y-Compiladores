@@ -123,57 +123,62 @@ public class Grafo {
     public List<Integer> bellmanFordMaxVictimas(int origen, int guarida) {
         int[] maxVictimas = new int[V];
         int[] prev = new int[V];
-        boolean[] visitado = new boolean[V]; // Para recordar qué nodos ya usamos en nuestro camino
-
+        boolean[][] nodosEnCamino = new boolean[V][V]; // nodosEnCamino[v][nodo] = true si 'nodo' está en el camino hacia 'v'
+        int a = 0;
         Arrays.fill(maxVictimas, -INF);
         Arrays.fill(prev, -1);
 
         // Empezamos desde el origen
         maxVictimas[origen] = victimas[origen];
-        visitado[origen] = true; // Marcamos el origen como ya usado
+        System.out.println("=== DEBUG BELLMAN-FORD ===");
+        System.out.println("Origen: " + origen + ", Guarida: " + guarida);
+        System.out.println("Víctimas por nodo: " + Arrays.toString(victimas));
+        System.out.println("========================");
+        nodosEnCamino[origen][origen] = true; // Ya usamos el origen
 
         // Variable para saber si encontramos mejoras
         boolean cambioEnIteracion = false;
 
         for (int i = 0; i < V - 1; i++) {
             cambioEnIteracion = false;
-
+            a = i;
             for (int u = 0; u < V; u++) {
                 if (maxVictimas[u] == -INF) continue; // Si no podemos llegar aquí, lo saltamos
 
                 for (int v = 0; v < V; v++) {
                     if (matrizAdj[u][v] != INF && u != v) {
+                        // Si 'v' ya está en el camino hacia 'u', seria un ciclo
+                        if (nodosEnCamino[u][v]) continue;
+
                         // Calculamos cuántas víctimas tendríamos si vamos a 'v'
                         int nuevoValor;
 
-                        if (visitado[v] || v == guarida) {
-                            // Si ya pasamos por aquí antes, no contamos sus víctimas otra vez
+                        if (v == guarida) {
+                            // La guarida no suma víctimas
                             nuevoValor = maxVictimas[u];
                         } else {
-                            // Si es la primera vez que llegamos, sí contamos sus víctimas
+                            // Sumamos las víctimas de 'v' (primera vez que lo visitamos en este camino)
                             nuevoValor = maxVictimas[u] + victimas[v];
                         }
 
                         if (nuevoValor > maxVictimas[v]) {
                             maxVictimas[v] = nuevoValor;
                             prev[v] = u;
-                            // Marcamos este nodo como usado (excepto la guarida)
-                            if (v != guarida && !visitado[v]) {
-                                visitado[v] = true;
+
+                            // Copiamos los nodos del camino hacia 'u' y agregamos 'v'
+                            for (int nodo = 0; nodo < V; nodo++) {
+                                nodosEnCamino[v][nodo] = nodosEnCamino[u][nodo];
                             }
+                            nodosEnCamino[v][v] = true;
+
                             cambioEnIteracion = true;
                         }
                     }
                 }
             }
-
-            // Si no encontramos mejoras, ya terminamos de explorar
+            System.out.println("Iter " + i + " | maxVictimas: " + Arrays.toString(maxVictimas));
+            //Si no se actualizó ningún camino ya no puede haber un camino mejor
             if (!cambioEnIteracion) {
-                break;
-            }
-
-            // Si ya llegamos a la guarida y no hay más mejoras, podemos parar
-            if (maxVictimas[guarida] != -INF && !cambioEnIteracion) {
                 break;
             }
         }
@@ -197,17 +202,14 @@ public class Grafo {
 
             visitadoCamino[actual] = true;
             camino.add(actual);
-
-            // Recordamos que usamos este nodo
-            visitado[actual] = true;
-
             actual = prev[actual];
         }
 
         Collections.reverse(camino); // Le damos vuelta al camino para que vaya del origen a la guarida
 
-        System.out.println("Máximo de víctimas: " + maxVictimas[guarida]);
-
+        System.out.println("Iteración " + a);
+        System.out.println("MaxVictimas: " + Arrays.toString(maxVictimas));
+        System.out.println("---");
         return camino;
     }
 

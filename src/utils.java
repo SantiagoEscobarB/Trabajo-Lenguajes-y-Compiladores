@@ -16,9 +16,7 @@ public class utils {
         int v;
         int d;
         int c;
-        //Mientras i sea menor al numero de nodos y haya datos por leer, asignar u, v, d, c y añadir edges a la matriz de adyacencia y victimas al arreglo de victimas
-        int i = 0;
-        while (i  < V && sc.hasNextLine()) {
+        while (sc.hasNextLine()) {
             linea = sc.nextLine();
             partes = linea.split(",");
             u = Integer.parseInt(partes[0].trim());
