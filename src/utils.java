@@ -2,12 +2,12 @@ import java.util.Scanner;
 
 public class utils {
     public static Grafo leerDatos() {
+        //Inicializar el scanner y obtener la cantidad de nodos para la matriz
         Scanner sc = new Scanner(System.in);
-
-
         IO.println("Ingrese el numero de nodos: ");
         int V = Integer.parseInt(sc.nextLine());
 
+        //Inicializar el grafo con el numero de nodos y declarar el String[] de partes con u, v, d, c
         Grafo grafo = new Grafo(V);
         IO.println("Ingrese edges y cantidad de victimas en formato $u, v, d, c");
         String linea;
@@ -16,10 +16,10 @@ public class utils {
         int v;
         int d;
         int c;
-        while (sc.hasNextLine()) {
+        //Mientras i sea menor al numero de nodos y haya datos por leer, asignar u, v, d, c y añadir edges a la matriz de adyacencia y victimas al arreglo de victimas
+        int i = 0;
+        while (i  < V && sc.hasNextLine()) {
             linea = sc.nextLine();
-            if (linea.equalsIgnoreCase("END")) break;
-
             partes = linea.split(",");
             u = Integer.parseInt(partes[0].trim());
             v = Integer.parseInt(partes[1].trim());
