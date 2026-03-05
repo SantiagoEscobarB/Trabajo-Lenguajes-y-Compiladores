@@ -157,7 +157,7 @@ public class Grafo {
                             // La guarida no suma víctimas
                             nuevoValor = maxVictimas[u];
                         } else {
-                            // Sumamos las víctimas de 'v' (primera vez que lo visitamos en este camino)
+                            // Sumamos las víctimas en 'v' (primera vez que lo visitamos en este camino)
                             nuevoValor = maxVictimas[u] + victimas[v];
                         }
 
