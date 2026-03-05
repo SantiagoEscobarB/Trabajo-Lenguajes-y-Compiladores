@@ -155,20 +155,19 @@ public class InterfazGrafo extends JFrame {
     private void cargarEjemplo() {
         txtVertices.setText("7");
         txtOrigen.setText("0");
-        txtGuarida.setText("5");
+        txtGuarida.setText("6");
         cmbModo.setSelectedItem("Ambos");
 
         txtDatos.setText(
-                "0,1,4,2\n" +
-                        "0,2,2,1\n" +
-                        "0,6,9,10\n" +
-                        "1,2,1,3\n" +
-                        "1,3,5,4\n" +
-                        "2,3,8,2\n" +
-                        "2,4,10,6\n" +
-                        "3,4,2,5\n" +
-                        "3,5,6,7\n" +
-                        "6,2,9,3\n"
+                "0,1,2,5\n" +
+                        "1,2,2,40\n" +
+                        "1,3,2,25\n" +
+                        "1,4,2,30\n" +
+                        "1,5,2,35\n" +
+                        "2,6,3,0\n" +
+                        "3,6,3,0\n" +
+                        "4,6,3,0\n" +
+                        "5,6,3,0\n"
         );
 
         construirYMostrar(null);
